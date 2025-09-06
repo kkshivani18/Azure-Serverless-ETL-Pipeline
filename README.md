@@ -1,7 +1,7 @@
 # Azure Serverless ETL Pipeline
 
 ### What's an ETL Pipeline ?
-### --> ETL (Extract, Transform, Load): A data pipeline process where data is extracted from sources, transformed into the desired format and loaded into a storage system or database. 
+### ETL (Extract, Transform, Load): A data pipeline process where data is extracted from sources, transformed into the desired format and loaded into a storage system or database. 
 
 ## Project Overview
 
