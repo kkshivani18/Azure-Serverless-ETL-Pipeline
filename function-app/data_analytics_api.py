@@ -43,3 +43,60 @@ def GetAllEnergy(req: func.HttpRequest) -> func.HttpResponse:
             f"Error fetching data: {str(e)}",
             status_code=500
         )
+
+@app.route(route="GetEnergyByHomeID", auth_level=func.AuthLevel.FUNCTION)
+def GetEnergyByHomeID(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("HTTP Trigger - Fetching energy by HomeID")
+
+    home_id = req.params.get("HomeID")
+    if not home_id:
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            home_id = req_body.get("HomeID")
+
+    if not home_id:
+        return func.HttpResponse(
+            "Please provide a HomeID in the query string or request body",
+            status_code=400
+        )
+
+    try:
+        query = f"SELECT c.HomeID, c.ApplianceType, c.EnergyConsumption, c.Season, c.Date FROM c WHERE c.HomeID = '{home_id}'"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+
+        return func.HttpResponse(
+            body=json.dumps(items, default=str),
+            mimetype="application/json",
+            status_code=200
+        )
+
+    except Exception as e:
+        logging.error(f"Error querying CosmosDB: {e}")
+        return func.HttpResponse(
+            f"Error fetching data for HomeID {home_id}: {str(e)}",
+            status_code=500
+        )
+
+@app.route(route="GetSeasonalConsumption", auth_level=func.AuthLevel.FUNCTION)
+def GetSeasonalConsumption(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("HTTP Trigger - Fetching seasonal consumption")
+
+    try:
+        query = "SELECT c.Season, c.ApplianceType, c.EnergyConsumption FROM c"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+
+        return func.HttpResponse(
+            body=json.dumps(items, default=str),
+            mimetype="application/json",
+            status_code=200
+        )
+
+    except Exception as e:
+        logging.error(f"Error querying CosmosDB for seasonal consumption: {e}")
+        return func.HttpResponse(
+            f"Error fetching seasonal data: {str(e)}",
+            status_code=500
+        )
