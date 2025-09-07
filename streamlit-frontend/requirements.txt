@@ -1,0 +1,8 @@
+# streamlit app requirements
+streamlit
+pandas
+requests
+matplotlib
+plotly
+seaborn     
+scikit-learn  

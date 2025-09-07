@@ -3,6 +3,7 @@ import azure.functions as func
 import logging
 import csv
 import uuid
+import json
 from azure.cosmos import CosmosClient, PartitionKey
 import os
 
@@ -21,24 +22,24 @@ container = database.create_container_if_not_exists(
     offer_throughput=400
 )
 
-@app.route(route="GetEnergyDataByID", auth_level=func.AuthLevel.FUNCTION)
-def GetEnergyDataByID(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("HTTP trigger function received a request.")
+@app.route(route="GetAllEnergyData", auth_level=func.AuthLevel.FUNCTION)
+def GetAllEnergy(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info("HttP trigger - Fetching all energy data from CosmosDB")
 
-    home_id = req.params.get("HomeID")
-    if not home_id:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            home_id = req_body.get("HomeID")
+    try:
+        query = "SELECT c.HomeID, c.ApplianceType, c.EnergyConsumption, c.Season, c.Date FROM c"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
 
-    if home_id:
-        # query CosmosDB with the HomeID
-        return func.HttpResponse(f"Data request received for HomeID: {home_id}")
-    else:
+        # convert decimal/float serialization 
         return func.HttpResponse(
-            "Please provide HomeID in query string or request body",
-            status_code=400
+            body=json.dumps(items, default=str),
+            mimetype="application/json",
+            status_code=200
+        )
+
+    except Exception as e:
+        logging.error(f"Error querying CosmosDB: {e}")
+        return func.HttpResponse(
+            f"Error fetching data: {str(e)}",
+            status_code=500
         )
