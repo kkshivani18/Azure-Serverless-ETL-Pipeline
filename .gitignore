@@ -69,3 +69,8 @@ crash.*.log
 
 # Lock files
 .terraform.lock.hcl
+
+# ml model outputs
+**/tmp/prophet_model.json
+**/tmp/anomaly_isoforest.pkl
+**/tmp/*

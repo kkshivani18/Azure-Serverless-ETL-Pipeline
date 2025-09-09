@@ -22,7 +22,7 @@ if st.button("Fetch Data"):
                 household_size = df["HouseholdSize"].mean() if "HouseholdSize" in df.columns else "N/A"
                 # efficiency = total_energy / household_size if household_size != "N/A" else "N/A"
 
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2 = st.columns(2)
                 col1.metric("Total Energy", f"{total_energy:.2f} kWh")
                 col2.metric("Avg per Appliance", f"{avg_energy:.2f} kWh")
                 # col3.metric("Household Size", household_size)
@@ -52,7 +52,7 @@ if st.button("Fetch Data"):
                                    title=f"Daily Usage Trend for Home {home_id}", markers=True)
                     st.plotly_chart(fig3, use_container_width=True)
 
-                # Comparison vs Average Household
+                # home vs Average Household
                 API_ALL = "http://localhost:7071/api/GetAllEnergyData"
                 resp_all = requests.get(API_ALL)
                 if resp_all.status_code == 200:
