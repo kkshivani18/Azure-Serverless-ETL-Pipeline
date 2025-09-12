@@ -17,7 +17,6 @@ if response.status_code == 200:
 
     energy_per_appliance = df.groupby("ApplianceType")["EnergyConsumption"].sum().reset_index()
 
-    # st.subheader("Total Energy Consumption by Appliance (in kWh)")
     fig = px.line(
         energy_per_appliance,
         x="ApplianceType",
@@ -34,7 +33,7 @@ if response.status_code == 200:
     st.metric("Total Energy Consumption", f"{total_energy:.2f} kWh")
     st.metric("Average per Record", f"{avg_energy:.2f} kWh")
 
-    # --- Top 5 Appliances ---
+    # top 5 Appliances 
     st.subheader("Top 5 Energy-Draining Appliances")
     top_appliances = df.groupby("ApplianceType")["EnergyConsumption"].sum().nlargest(5).reset_index()
     fig1 = px.bar(top_appliances, x="ApplianceType", y="EnergyConsumption")

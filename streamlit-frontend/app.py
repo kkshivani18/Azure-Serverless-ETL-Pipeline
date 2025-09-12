@@ -1,22 +1,49 @@
 import streamlit as st
 
-st.set_page_config(page_title="Home Energy Consumption Dashboard", page_icon="⚡", layout="wide")
+# page config
+st.set_page_config(
+    page_title="⚡ Home Energy Consumption Dashboard",
+    page_icon="⚡",
+    layout="wide"
+)
 
-st.title("⚡ Home Energy Consumption Analytics")
-
+# header section
+# st.markdown("<h1 style='text-align: center; color: #CC9900;'>⚡ Home Energy Consumption Analytics</h1>", unsafe_allow_html=True)
 st.markdown("""
-Welcome to the **Home Energy Consumption Analytics Dashboard**.  
-This platform leverages **Azure Functions** and **CosmosDB** to process household energy usage data  
-and provide **actionable insights** through interactive analytics.
-""")
+<h1 style='text-align: center; color: white; text-shadow: 1px 1px 2px #000;'>⚡ Home Energy Consumption Analytics</h1>
+""", unsafe_allow_html=True)
+st.markdown("<hr>", unsafe_allow_html=True)
 
-st.markdown("### 🔍 Features of Home Energy Consumption Analytics")
+# intro section
 st.markdown("""
-- **📊 Overview Dashboard** – See total energy usage trends and top appliances.  
-- **🏠 Household Analytics** – Explore energy breakdown for individual households.  
-- **🤖 Predictions (ML)** – Forecast future consumption and detect anomalies.  
-- **💡 Recommendations** – Get actionable tips for efficient energy usage.  
-""")
+<div style="font-size: 16px;">
+You arrived at <strong>Home Energy Consumption Analytics Dashboard</strong> - a smart platform powered by <strong>Azure Functions</strong> and <strong>CosmosDB</strong> to help you monitor, forecast and optimize household energy usage.
+</div>
+""", unsafe_allow_html=True)
 
-st.info("👉 Sidebar navigates through different analysis pages.")
+st.markdown("<br>", unsafe_allow_html=True)
 
+# highlights
+st.markdown("### Features")
+cols = st.columns(2)
+
+with cols[0]:
+    st.markdown("""
+    - 📊 **Overview Dashboard**  
+      Visualize total energy usage trends and top-consuming appliances.
+      
+    - 🏠 **Household Analytics**  
+      Dive into energy breakdowns for individual homes.
+    """)
+
+with cols[1]:
+    st.markdown("""
+    - 🤖 **ML Predictions**  
+      Forecast future consumption and detect anomalies using machine learning.
+    """)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Footer
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; font-size: 14px;'>Built with ❤️ using Streamlit, Azure and Python</div>", unsafe_allow_html=True)
