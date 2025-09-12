@@ -52,5 +52,5 @@ __azurite_db*__.json
 **/tmp/prophet_model.json
 **/tmp/anomaly_isoforest.pkl
 **/tmp
-prophet_model.json
-anomaly_isoforest.pkl
+# prophet_model.json
+# anomaly_isoforest.pkl
