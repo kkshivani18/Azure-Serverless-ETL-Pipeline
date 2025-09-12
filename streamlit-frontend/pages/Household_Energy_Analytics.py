@@ -20,13 +20,10 @@ if st.button("Fetch Data"):
                 total_energy = df["EnergyConsumption"].sum()
                 avg_energy = df["EnergyConsumption"].mean()
                 household_size = df["HouseholdSize"].mean() if "HouseholdSize" in df.columns else "N/A"
-                # efficiency = total_energy / household_size if household_size != "N/A" else "N/A"
 
                 col1, col2 = st.columns(2)
                 col1.metric("Total Energy", f"{total_energy:.2f} kWh")
                 col2.metric("Avg per Appliance", f"{avg_energy:.2f} kWh")
-                # col3.metric("Household Size", household_size)
-                # col4.metric("Efficiency (kWh/person)", f"{efficiency:.2f}" if efficiency != "N/A" else "N/A")
 
                 # Appliance Breakdown 
                 st.subheader("Appliance Breakdown")

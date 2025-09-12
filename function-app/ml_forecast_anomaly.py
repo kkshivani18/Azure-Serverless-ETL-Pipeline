@@ -122,9 +122,6 @@ def Forecast(req: func.HttpRequest) -> func.HttpResponse:
         # normalize
         df['Date'] = pd.to_datetime(df['Date'])
         # aggregate to daily
-        # daily = df.groupby('Date', as_index=False)['EnergyConsumption'].sum()
-        # daily = daily.rename(columns={'Date':'ds','EnergyConsumption':'y'}).sort_values('ds')
-
         df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
         daily = df.groupby('Date')['EnergyConsumption'].sum()
 
@@ -145,210 +142,9 @@ def Forecast(req: func.HttpRequest) -> func.HttpResponse:
         logging.exception("Forecast error")
         return func.HttpResponse(f"Error building forecast: {e}", status_code=500)
 
-
-# Anomaly Detection (with IsolationForest)
-# @app.route(route="DetectAnomalies", auth_level=func.AuthLevel.FUNCTION, methods=["POST","GET"])
-# def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
-#     """
-#     POST JSON or query params:
-#       - HomeID (optional) - if provided, the function will analyze that home; else runs across all homes in the date range
-#       - start (YYYY-MM-DD)
-#       - end (YYYY-MM-DD)
-#     Returns JSON rows with features, score and anomaly flag
-#     """
-#     if anomaly_pipeline is None:
-#         return func.HttpResponse("Anomaly model not loaded.", status_code=500)
-
-#     try:
-#         homeid = get_param(req, "HomeID", None)
-#         start = get_param(req, "start", None)
-#         end = get_param(req, "end", None)
-
-#         # Build base query
-#         sql = "SELECT c.HomeID, c.Date, c.EnergyConsumption, c.ApplianceType FROM c"
-#         where = []
-#         parameters = []
-
-#         if homeid:
-#             where.append("c.HomeID = @homeid")
-#             parameters.append({"name":"@homeid","value": homeid})
-#         if start:
-#             where.append("c.Date >= @start")
-#             parameters.append({"name":"@start","value": start})
-#         if end:
-#             where.append("c.Date <= @end")
-#             parameters.append({"name":"@end","value": end})
-
-#         if where:
-#             sql = f"{sql} WHERE " + " AND ".join(where)
-
-#         items = list(container.query_items(query=sql, parameters=parameters if parameters else None, enable_cross_partition_query=True))
-#         if not items:
-#             return func.HttpResponse(json.dumps([]), mimetype="application/json", status_code=200)
-
-#         df = pd.DataFrame(items)
-#         df['Date'] = pd.to_datetime(df['Date'])
-
-#         # Aggregate to per-home, per-day (same features used in training)
-#         # agg = df.groupby(['HomeID','Date']).agg(
-#         #     total_kwh = ('EnergyConsumption','sum'),
-#         #     unique_appliances = ('ApplianceType','nunique')
-#         # ).reset_index().sort_values(['HomeID','Date'])
-
-#         df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
-
-#         # Initial aggregation
-#         agg = df.groupby(['HomeID','Date']).agg(
-#             total_kwh=('EnergyConsumption','sum'),
-#             unique_appliances=('ApplianceType','nunique')
-#         ).reset_index()
-
-#         # Fill missing dates per HomeID
-#         filled = []
-#         for home in agg['HomeID'].unique():
-#             sub = agg[agg['HomeID'] == home].set_index('Date')
-#             full_range = pd.date_range(start=sub.index.min(), end=sub.index.max(), freq='D')
-#             sub = sub.reindex(full_range, fill_value=0)
-#             sub['HomeID'] = home
-#             sub = sub.reset_index().rename(columns={'index':'Date'})
-#             filled.append(sub)
-
-#         agg = pd.concat(filled).sort_values(['HomeID','Date'])
-
-#         # rolling mean per home (7-day)
-#         agg['rolling_7_mean'] = agg.groupby('HomeID')['total_kwh'].transform(lambda x: x.rolling(7, min_periods=1).mean())
-#         agg['dow'] = agg['Date'].dt.dayofweek
-
-#         feature_cols = ['total_kwh','unique_appliances','rolling_7_mean','dow']
-#         X = agg[feature_cols].fillna(0)
-
-#         preds = anomaly_pipeline.predict(X)              # -1 anomaly, 1 normal
-#         scores = anomaly_pipeline.decision_function(X)   # higher = more normal (sklearn)
-#         agg['anomaly'] = preds == -1
-#         agg['score'] = scores
-
-#         # return useful fields
-#         out = agg[['HomeID','Date','total_kwh','unique_appliances','rolling_7_mean','dow','score','anomaly']].to_dict(orient='records')
-#         return func.HttpResponse(body=json.dumps(out, default=str), mimetype="application/json", status_code=200)
-
-#     except Exception as e:
-#         logging.exception("DetectAnomalies error")
-#         return func.HttpResponse(f"Error running anomaly detection: {e}", status_code=500)
-
-
-# @app.route(route="DetectAnomalies", auth_level=func.AuthLevel.FUNCTION, methods=["POST", "GET"])
-# def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
-#     """
-#     Query params or POST JSON:
-#       - HomeID (optional): analyze one home or all homes
-#       - start (YYYY-MM-DD): start date filter
-#       - end (YYYY-MM-DD): end date filter
-#       - debug=true (optional): enables logging of intermediate steps
-#     Returns:
-#       JSON list of rows with anomaly flags and scores
-#     """
-#     if anomaly_pipeline is None:
-#         return func.HttpResponse("Anomaly model not loaded.", status_code=500)
-
-#     try:
-#         homeid = get_param(req, "HomeID", None)
-#         start = get_param(req, "start", None)
-#         end = get_param(req, "end", None)
-#         debug = get_param(req, "debug", "false").lower() == "true"
-
-#         # Build query
-#         sql = "SELECT c.HomeID, c.Date, c.EnergyConsumption, c.ApplianceType FROM c"
-#         where = []
-#         parameters = []
-
-#         if homeid:
-#             where.append("c.HomeID = @homeid")
-#             parameters.append({"name": "@homeid", "value": homeid})
-#         if start:
-#             where.append("c.Date >= @start")
-#             parameters.append({"name": "@start", "value": start})
-#         if end:
-#             where.append("c.Date <= @end")
-#             parameters.append({"name": "@end", "value": end})
-#         if where:
-#             sql += " WHERE " + " AND ".join(where)
-
-#         items = list(container.query_items(
-#             query=sql,
-#             parameters=parameters if parameters else None,
-#             enable_cross_partition_query=True
-#         ))
-
-#         if not items:
-#             return func.HttpResponse(json.dumps([]), mimetype="application/json", status_code=200)
-
-#         df = pd.DataFrame(items)
-#         df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
-
-#         # Aggregate per home per day
-#         agg = df.groupby(['HomeID', 'Date']).agg(
-#             total_kwh=('EnergyConsumption', 'sum'),
-#             unique_appliances=('ApplianceType', 'nunique')
-#         ).reset_index()
-
-#         # Fill missing dates per HomeID
-#         filled = []
-#         for home in agg['HomeID'].unique():
-#             sub = agg[agg['HomeID'] == home].set_index('Date')
-#             full_range = pd.date_range(start=sub.index.min(), end=sub.index.max(), freq='D')
-#             sub = sub.reindex(full_range, fill_value=0)
-#             sub['HomeID'] = home
-#             sub = sub.reset_index().rename(columns={'index': 'Date'})
-#             filled.append(sub)
-
-#         agg = pd.concat(filled).sort_values(['HomeID', 'Date'])
-
-#         # Feature engineering
-#         agg['rolling_7_mean'] = agg.groupby('HomeID')['total_kwh'].transform(lambda x: x.rolling(7, min_periods=1).mean())
-#         agg['dow'] = agg['Date'].dt.dayofweek
-
-#         feature_cols = ['total_kwh', 'unique_appliances', 'rolling_7_mean', 'dow']
-#         X = agg[feature_cols].fillna(0)
-
-#         # Apply model
-#         preds = anomaly_pipeline.predict(X)              # -1 = anomaly, 1 = normal
-#         scores = anomaly_pipeline.decision_function(X)   # higher = more normal
-
-#         agg['anomaly'] = preds == -1
-#         agg['score'] = scores
-
-#         # Optional debug logs
-#         if debug:
-#             logging.info(f"Total records analyzed: {len(agg)}")
-#             logging.info(f"Anomalies detected: {agg['anomaly'].sum()}")
-#             logging.info(f"Feature matrix:\n{X.head()}")
-#             logging.info(f"Scores:\n{scores[:5]}")
-
-#         logging.info(f"Anomalies detected: {agg['anomaly'].sum()}")
-#         logging.info(f"Top anomaly:\n{agg[agg['anomaly'] == True].head()}")
-#         # Return results
-#         out = agg[['HomeID', 'Date', 'total_kwh', 'unique_appliances', 'rolling_7_mean', 'dow', 'score', 'anomaly']]
-#         return func.HttpResponse(body=json.dumps(out.to_dict(orient='records'), default=str),
-#                                  mimetype="application/json", status_code=200)
-
-#     except Exception as e:
-#         logging.exception("DetectAnomalies error")
-#         return func.HttpResponse(f"Error running anomaly detection: {e}", status_code=500)
-
-
-
-
+# Detect Anomaly (with IsoForest)
 @app.route(route="DetectAnomalies", auth_level=func.AuthLevel.FUNCTION, methods=["POST", "GET"])
 def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Query params or POST JSON:
-      - HomeID (optional): analyze one home or all homes
-      - start (YYYY-MM-DD): start date filter
-      - end (YYYY-MM-DD): end date filter
-      - debug=true (optional): enables logging of intermediate steps
-    Returns:
-      JSON list of rows with anomaly flags and scores
-    """
     if anomaly_pipeline is None:
         return func.HttpResponse("Anomaly model not loaded.", status_code=500)
 
@@ -358,7 +154,7 @@ def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
         end = get_param(req, "end", None)
         debug = get_param(req, "debug", "false").lower() == "true"
 
-        # Build query (no date filter here — we'll filter manually)
+        # build query 
         sql = "SELECT c.HomeID, c.Date, c.EnergyConsumption, c.ApplianceType FROM c"
         where = []
         parameters = []
@@ -382,7 +178,7 @@ def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
         df = pd.DataFrame(items)
         df['Date'] = pd.to_datetime(df['Date'], format="%d-%m-%Y")
 
-        # Manual date filtering
+        # manual date filtering
         if start:
             start_dt = pd.to_datetime(start)
             df = df[df['Date'] >= start_dt]
@@ -393,13 +189,13 @@ def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
         if df.empty:
             return func.HttpResponse(json.dumps([]), mimetype="application/json", status_code=200)
 
-        # Aggregate per home per day
+        # aggregate per home per day
         agg = df.groupby(['HomeID', 'Date']).agg(
             total_kwh=('EnergyConsumption', 'sum'),
             unique_appliances=('ApplianceType', 'nunique')
         ).reset_index()
 
-        # Fill missing dates per HomeID
+        # fill missing dates per HomeID
         filled = []
         for home in agg['HomeID'].unique():
             sub = agg[agg['HomeID'] == home].set_index('Date')
@@ -411,21 +207,20 @@ def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
 
         agg = pd.concat(filled).sort_values(['HomeID', 'Date'])
 
-        # Feature engineering
+        # feature engineering
         agg['rolling_7_mean'] = agg.groupby('HomeID')['total_kwh'].transform(lambda x: x.rolling(7, min_periods=1).mean())
         agg['dow'] = agg['Date'].dt.dayofweek
 
         feature_cols = ['total_kwh', 'unique_appliances', 'rolling_7_mean', 'dow']
         X = agg[feature_cols].fillna(0)
 
-        # Apply model
+        # apply model
         preds = anomaly_pipeline.predict(X)              # -1 = anomaly, 1 = normal
         scores = anomaly_pipeline.decision_function(X)   # higher = more normal
 
         agg['anomaly'] = preds == -1
         agg['score'] = scores
 
-        # Optional debug logs
         if debug:
             logging.info(f"Total records analyzed: {len(agg)}")
             logging.info(f"Anomalies detected: {agg['anomaly'].sum()}")
@@ -433,7 +228,7 @@ def DetectAnomalies(req: func.HttpRequest) -> func.HttpResponse:
             logging.info(f"Feature matrix:\n{X.head()}")
             logging.info(f"Scores:\n{scores[:5]}")
 
-        # Return results
+        # results
         out = agg[['HomeID', 'Date', 'total_kwh', 'unique_appliances', 'rolling_7_mean', 'dow', 'score', 'anomaly']]
         return func.HttpResponse(body=json.dumps(out.to_dict(orient='records'), default=str),
                                  mimetype="application/json", status_code=200)
