@@ -5,29 +5,35 @@
 
 ## Project Overview
 
-This project implements a serverless ETL (Extract, Transform, Load) pipeline on Microsoft Azure. The pipeline ingests raw data from various sources, processes and transforms it using serverless compute and loads the curated data into a destination for analytics and reporting.
+This project demonstrates a complete end-to-end serverless data pipeline on Azure for analyzing household energy consumption. It uses a series of Azure services and Python applications to ingest raw data, transform it, store it and serve it via an API for analytics and machine learning frontend.
 
 ### Goals of the project:
-- Build a cost-efficient, scalable, and event-driven pipeline.
+- Build a cost-efficient, scalable and event-driven pipeline.
 - Automate data ingestion, transformation and storage with minimal infrastructure management.
 - Leverage Azure Functions, Blob Storage and Cosmos DB for seamless serverless execution.
 
-## ⚙️ Architecture
+## ⚙️ Architecture  
 
 ### 1. Data Ingestion (Extract)
-- Source data is uploaded into Azure Blob Storage (Data lake - raw/landing container).
-- Events in Blob Storage trigger the ETL pipeline automatically.
+- Raw CSV data is uploaded into Azure Blob Storage.
+- A Blob Trigger in the Azure Function App automatically starts the ETL pipeline whenever a new file is uploaded.
 
 ### 2. Transformation (Transform)
-- Azure Functions process and clean the incoming data.
-- Data transformations include parsing, validation and formatting to match target schema.
-- Additional enrichment or filtering is applied before storing.
+- The Azure Function processes and cleans the incoming data.
+- This includes parsing, validation, and formatting to match the target schema.
+- Additional enrichment and filtering, such as forecasting with the **Prophet** model or detecting anomalies with the **Isolation Forest** model, is applied to the data.
 
 ### 3. Data Loading (Load)
-- Transformed data is loaded into Azure Cosmos DB for structured queries and analytics.
-- Processed data can also be exported back into Blob Storage (processed container) for archival or reporting.
+- The transformed data is loaded into Azure Cosmos DB for structured queries and analytics.
+- The entire cloud infrastructure is defined and managed using **Terraform**, ensuring a repeatable and automated deployment process.
 
-### 4. Monitoring & Logging
-- Application Insights monitors pipeline performance and logs errors.
-- Scales automatically with workload due to serverless architecture.
+### 4. Application Layer
+- A set of **HTTP Trigger APIs** expose endpoints for the frontend.
+- These functions allow for retrieving aggregated data, running forecasts, and detecting anomalies.
 
+### 5. Frontend
+- A **Streamlit** web application provides an interactive user interface to visualize energy data, run analytics, and interact with the forecasting and anomaly detection APIs.
+
+### 6. Monitoring & Logging
+- Application Insights monitors the pipeline's performance and logs errors.
+- The serverless architecture allows the entire solution to scale automatically with the workload, ensuring efficient resource utilization.
