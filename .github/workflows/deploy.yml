@@ -16,9 +16,8 @@ jobs:
   # Infrastructure with Terraform
   terraform:
     name: 'Terraform Infrastructure'
-    runs-on: ubuntu-latest  
-
-    # permissions for OIDC authentication
+    runs-on: ubuntu-latest
+    
     permissions:
       id-token: write
       contents: read
