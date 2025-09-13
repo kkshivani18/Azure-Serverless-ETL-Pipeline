@@ -13,10 +13,10 @@ provider "azurerm" {
   subscription_id = var.az_subscription_id
 }
 
-# resource "azurerm_resource_group" "az_etlpipeline_rg" {
-#   name     = var.resource_group_name
-#   location = var.location
-# }
+resource "azurerm_resource_group" "az_etlpipeline_rg" {
+  name     = var.resource_group_name
+  location = var.location
+}
 
 # storage acc
 resource "azurerm_storage_account" "az_storage_account" {
