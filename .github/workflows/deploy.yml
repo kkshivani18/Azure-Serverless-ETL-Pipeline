@@ -46,12 +46,12 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -input=false -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
+        run: terraform plan -input=false -var="az_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Apply
         id: apply
-        run: terraform apply -auto-approve -input=false -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
+        run: terraform apply -auto-approve -input=false -var="az_subscription_id=${{ secrets.AZURE_SUBSCRIPTION_ID }}" -var="resource_group_name=${{ env.RESOURCE_GROUP }}"
         working-directory: ${{ env.TF_WORKING_DIR }}
 
   # Deploy Function App Code
