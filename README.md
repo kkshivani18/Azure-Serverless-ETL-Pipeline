@@ -39,3 +39,7 @@ This project demonstrates a complete end-to-end serverless data pipeline on Azur
 ### 6. Monitoring & Logging
 - Application Insights monitors the pipeline's performance and logs errors.
 - The serverless architecture allows the entire solution to scale automatically with the workload, ensuring efficient resource utilization.
+
+## Demonstration of Project
+
+[Demonstration Video](./images/projectDemo.mp4)
