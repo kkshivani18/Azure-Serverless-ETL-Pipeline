@@ -7,6 +7,8 @@
 
 This project demonstrates a complete end-to-end serverless data pipeline on Azure for analyzing household energy consumption. It uses a series of Azure services and Python applications to ingest raw data, transform it, store it and serve it via an API for analytics and machine learning frontend.
 
+![Workflow Architecture](<./images/workflow.png>)
+
 ### Goals of the project:
 - Build a cost-efficient, scalable and event-driven pipeline.
 - Automate data ingestion, transformation and storage with minimal infrastructure management.
