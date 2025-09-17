@@ -42,11 +42,11 @@ if st.button("Fetch Data"):
 
                 # Trend Over Time
                 if "Date" in df.columns:
-                    st.subheader("Daily Energy Trend")
+                    st.subheader("Monthly Energy Trend")
                     df["Date"] = pd.to_datetime(df["Date"])
                     daily_df = df.groupby("Date")["EnergyConsumption"].sum().reset_index()
                     fig3 = px.line(daily_df, x="Date", y="EnergyConsumption",
-                                   title=f"Daily Usage Trend for Home {home_id}", markers=True)
+                                   title=f"Monthly Usage Trend for Home {home_id}", markers=True)
                     st.plotly_chart(fig3, use_container_width=True)
 
                 # home vs Average Household
