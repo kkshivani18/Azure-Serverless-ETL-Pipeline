@@ -40,8 +40,7 @@ This project demonstrates a complete end-to-end serverless data pipeline on Azur
 - Application Insights monitors the pipeline's performance and logs errors.
 - The serverless architecture allows the entire solution to scale automatically with the workload, ensuring efficient resource utilization.
 
-### 📝 Detailed Write-Up  
-### Read the full article on - [![Medium](https://img.shields.io/badge/Medium-Read%20Article-black?logo=medium)](https://medium.com/@kkrishnashivani18/azure-serverless-etl-pipeline-6229ffef06dc)
+### 📝 Detailed Write-Up on - [![Medium](https://img.shields.io/badge/Medium-Read%20Article-black?logo=medium)](https://medium.com/@kkrishnashivani18/azure-serverless-etl-pipeline-6229ffef06dc)
 
 ## Demonstration of Project
 
