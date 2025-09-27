@@ -42,4 +42,4 @@ This project demonstrates a complete end-to-end serverless data pipeline on Azur
 
 ## Demonstration of Project
 
-[Demonstration Video](./images/projectDemo.mp4)
+https://github.com/user-attachments/assets/d89a7237-1ae1-45f8-bb72-0f06866d5da2
